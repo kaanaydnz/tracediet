@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Sign In
+{% endblock %}
+
+{% block main %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title text-center mb-4">Create Account</h3>
+                <form action="/signin" method="post">
+
+                    <div class="mb-3">
+                        <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username"
+                            type="text" required>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col">
+                            <input class="form-control" name="name" placeholder="First Name" type="text" required>
+                        </div>
+                        <div class="col">
+                            <input class="form-control" name="surname" placeholder="Last Name" type="text" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <select class="form-select" name="gender" required>
+                            <option value="" disabled selected>Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Birthday</label>
+                        <input class="form-control" name="birthday" type="date" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <input class="form-control" name="password" placeholder="Password (min. 8 characters)"
+                            type="password" minlength="8" required>
+                    </div>
+                    <div class="mb-3">
+                        <input class="form-control" name="confirmation" placeholder="Confirm Password" type="password"
+                            minlength="8" required>
+                    </div>
+
+                    <div class="d-grid">
+                        <button class="btn btn-primary" type="submit">Sign In</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
