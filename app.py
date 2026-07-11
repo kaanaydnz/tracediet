@@ -236,8 +236,8 @@ def profile():
         return render_template("profile.html", user=user)
 
 
-@app.route("/body", methods=["GET", "POST"])
-def body():
+@app.route("/progress", methods=["GET", "POST"])
+def progress():
     """Manage weight, height, BMI and goals"""
 
     if not session.get("user_id"):
@@ -257,11 +257,11 @@ def body():
                 height = float(height_str)
             except ValueError:
                 flash("Please enter valid numbers.", "danger")
-                return redirect("/body")
+                return redirect("/progress")
 
             if weight <= 0 or height <= 0:
                 flash("Weight and height must be positive numbers.", "danger")
-                return redirect("/body")
+                return redirect("/progress")
 
             height_m = height / 100.0
             bmi = round(weight / (height_m**2), 2)
@@ -274,18 +274,18 @@ def body():
                 bmi,
             )
             flash(f"Log added successfully! Your BMI is {bmi}.", "success")
-            return redirect("/body")
+            return redirect("/progress")
 
         elif target_weight_str:
             try:
                 target_weight = float(target_weight_str)
             except ValueError:
                 flash("Please enter a valid target weight.", "danger")
-                return redirect("/body")
+                return redirect("/progress")
 
             if target_weight <= 0:
                 flash("Target weight must be positive.", "danger")
-                return redirect("/body")
+                return redirect("/progress")
 
             existing_goal = db.execute(
                 "SELECT * FROM user_goals WHERE user_id = ?", user_id
@@ -304,11 +304,11 @@ def body():
                 )
 
             flash("Target weight updated successfully!", "success")
-            return redirect("/body")
+            return redirect("/progress")
 
         else:
             flash("Invalid submission.", "danger")
-            return redirect("/body")
+            return redirect("/progress")
 
     else:
         logs = db.execute(
@@ -321,4 +321,6 @@ def body():
         goals = db.execute("SELECT * FROM user_goals WHERE user_id = ?", user_id)
         goal = goals[0] if len(goals) > 0 else None
 
-        return render_template("body.html", logs=logs, latest_log=latest_log, goal=goal)
+        return render_template(
+            "progress.html", logs=logs, latest_log=latest_log, goal=goal
+        )
