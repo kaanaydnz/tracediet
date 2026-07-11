@@ -1,0 +1,141 @@
+{% extends "layout.html" %}
+
+{% block title %}Body Metrics{% endblock %}
+
+{% block main %}
+<div class="container">
+
+    {% set bg_color = 'bg-secondary' %}
+    {% set status_text = 'No Data' %}
+
+    {% if latest_log %}
+    {% if latest_log.bmi < 18.5 %} {% set bg_color='bg-info' %} {% set status_text='Underweight' %} {% elif
+        latest_log.bmi < 25 %} {% set bg_color='bg-success' %} {% set status_text='Normal Weight' %} {% elif
+        latest_log.bmi < 30 %} {% set bg_color='bg-warning' %} {% set status_text='Overweight' %} {% else %} {% set
+        bg_color='bg-danger' %} {% set status_text='Obese' %} {% endif %} {% endif %} <div
+        class="card {{ bg_color }} text-white text-center shadow border-0 rounded-4 mb-4">
+        <div class="card-body py-5">
+            <h5 class="text-white-50 text-uppercase tracking-wide mb-2">Current BMI</h5>
+            {% if latest_log %}
+            <h1 class="display-1 fw-bold mb-0">{{ latest_log.bmi }}</h1>
+            <p class="lead mt-2 mb-0 fw-medium">{{ status_text }}</p>
+            {% else %}
+            <h1 class="display-1 fw-bold mb-0">--</h1>
+            <p class="lead mt-2 mb-0 fw-medium">Add your first measurement below</p>
+            {% endif %}
+        </div>
+</div>
+
+<div class="row mb-5">
+
+    <div class="col-md-7 mb-3 mb-md-0">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-body">
+                <h5 class="card-title text-primary mb-3">Update Metrics</h5>
+                <form action="/body" method="post" class="row g-3 align-items-end">
+                    <div class="col-sm-5">
+                        <label class="form-label small text-muted">Height (cm)</label>
+                        <input type="number" step="0.1" class="form-control" name="height" placeholder="e.g. 175"
+                            value="{{ latest_log.height if latest_log else '' }}" required>
+                    </div>
+                    <div class="col-sm-5">
+                        <label class="form-label small text-muted">Weight (kg)</label>
+                        <input type="number" step="0.1" class="form-control" name="weight" placeholder="e.g. 70.5"
+                            required>
+                    </div>
+                    <div class="col-sm-2 d-grid">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Target Weight -->
+    <div class="col-md-5">
+        <div class="card shadow-sm h-100 border-0 bg-light">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                <h6 class="text-muted text-uppercase mb-2">Target Weight</h6>
+
+                {% if goal and goal.target_weight %}
+                <h2 class="text-dark fw-bold mb-1">{{ goal.target_weight }} <span class="fs-6 text-muted">kg</span></h2>
+
+                <!-- Smart BMI Target Check -->
+                {% if latest_log and latest_log.height %}
+                {% set target_bmi = (goal.target_weight / ((latest_log.height / 100) ** 2)) | round(1) %}
+
+                {% if target_bmi < 18.5 %} <p class="text-danger small fw-medium mb-3">
+                    ⚠️ Unhealthy target (Underweight BMI: {{ target_bmi }})
+                    </p>
+                    {% elif target_bmi >= 25 %}
+                    <p class="text-danger small fw-medium mb-3">
+                        ⚠️ Unhealthy target (Overweight BMI: {{ target_bmi }})
+                    </p>
+                    {% else %}
+                    <p class="text-success small fw-medium mb-3">
+                        ✓ Healthy target (BMI: {{ target_bmi }})
+                    </p>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted small mb-3">Enter your height to see target health.</p>
+                    {% endif %}
+
+                    {% else %}
+                    <p class="text-muted small mb-3">You haven't set a goal yet.</p>
+                    {% endif %}
+
+                    <form action="/body" method="post" class="input-group input-group-sm w-75">
+                        <input type="number" step="0.1" class="form-control" name="target_weight"
+                            placeholder="e.g. 65.5" required>
+                        <button class="btn btn-outline-secondary" type="submit">Set</button>
+                    </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<h5 class="text-primary mb-3">History Logs</h5>
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Date</th>
+                    <th>Weight</th>
+                    <th>Height</th>
+                    <th>BMI</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if logs %}
+                {% for log in logs %}
+                <tr>
+                    <td class="ps-4 text-muted">{{ log.date }}</td>
+                    <td class="fw-bold">{{ log.weight }} kg</td>
+                    <td>{{ log.height }} cm</td>
+                    <td>
+                        <span class="badge 
+                                    {% if log.bmi < 18.5 %}bg-info
+                                    {% elif log.bmi < 25 %}bg-success
+                                    {% elif log.bmi < 30 %}bg-warning
+                                    {% else %}bg-danger{% endif %}">
+                            {{ log.bmi }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">No logs found. Start by adding
+                        your metrics above.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+{% endblock %}

@@ -234,3 +234,91 @@ def profile():
     else:
         user = db.execute("SELECT * FROM users WHERE id = ?", user_id)[0]
         return render_template("profile.html", user=user)
+
+
+@app.route("/body", methods=["GET", "POST"])
+def body():
+    """Manage weight, height, BMI and goals"""
+
+    if not session.get("user_id"):
+        flash("Please log in to view your body metrics.", "danger")
+        return redirect("/login")
+
+    user_id = session["user_id"]
+
+    if request.method == "POST":
+        weight_str = request.form.get("weight")
+        height_str = request.form.get("height")
+        target_weight_str = request.form.get("target_weight")
+
+        if weight_str and height_str:
+            try:
+                weight = float(weight_str)
+                height = float(height_str)
+            except ValueError:
+                flash("Please enter valid numbers.", "danger")
+                return redirect("/body")
+
+            if weight <= 0 or height <= 0:
+                flash("Weight and height must be positive numbers.", "danger")
+                return redirect("/body")
+
+            height_m = height / 100.0
+            bmi = round(weight / (height_m**2), 2)
+
+            db.execute(
+                "INSERT INTO body_logs (user_id, weight, height, bmi, date) VALUES (?, ?, ?, ?, CURRENT_DATE)",
+                user_id,
+                weight,
+                height,
+                bmi,
+            )
+            flash(f"Log added successfully! Your BMI is {bmi}.", "success")
+            return redirect("/body")
+
+        elif target_weight_str:
+            try:
+                target_weight = float(target_weight_str)
+            except ValueError:
+                flash("Please enter a valid target weight.", "danger")
+                return redirect("/body")
+
+            if target_weight <= 0:
+                flash("Target weight must be positive.", "danger")
+                return redirect("/body")
+
+            existing_goal = db.execute(
+                "SELECT * FROM user_goals WHERE user_id = ?", user_id
+            )
+            if existing_goal:
+                db.execute(
+                    "UPDATE user_goals SET target_weight = ? WHERE user_id = ?",
+                    target_weight,
+                    user_id,
+                )
+            else:
+                db.execute(
+                    "INSERT INTO user_goals (user_id, target_weight, daily_calorie_target) VALUES (?, ?, 0)",
+                    user_id,
+                    target_weight,
+                )
+
+            flash("Target weight updated successfully!", "success")
+            return redirect("/body")
+
+        else:
+            flash("Invalid submission.", "danger")
+            return redirect("/body")
+
+    else:
+        logs = db.execute(
+            "SELECT * FROM body_logs WHERE user_id = ? ORDER BY date DESC, id DESC",
+            user_id,
+        )
+
+        latest_log = logs[0] if len(logs) > 0 else None
+
+        goals = db.execute("SELECT * FROM user_goals WHERE user_id = ?", user_id)
+        goal = goals[0] if len(goals) > 0 else None
+
+        return render_template("body.html", logs=logs, latest_log=latest_log, goal=goal)
