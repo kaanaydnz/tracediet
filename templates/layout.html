@@ -15,45 +15,52 @@
 <body>
     <header>
         <nav class="navbar navbar-expand bg-primary m-3 rounded-pill shadow py-2" data-bs-theme="dark">
-            <div class="container px-4 d-flex align-items-center">
+            <div class="container px-4 d-flex flex-wrap align-items-center">
 
-                <a class="navbar-brand fw-bold mb-0 d-flex align-items-center" href="/">TraceDiet</a>
+                <a class="navbar-brand fw-bold mb-0  d-none d-md-block me-3" href="/">TraceDiet</a>
+                <a class="navbar-brand fw-bold mb-0 d-block d-md-none w-100 text-center" href="/">TraceDiet</a>
 
-                <div class="d-flex flex-row align-items-center flex-grow-1 justify-content-between">
+                <div class="d-flex flex-row align-items-center flex-grow-1 justify-content-between flex-wrap">
 
                     {% if session["user_id"] %}
-                    <ul class="navbar-nav flex-row align-items-center gap-0 gap-md-4 mb-0 ms-md-4 ms-0">
-                        <li class="nav-item">
-                            <a class="nav-link py-0 px-2" href="/" aria-current="page">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link py-0 px-2" href="/calories">Calories</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link py-0 px-2" href="/progress">Progress</a>
-                        </li>
+                    <ul class="navbar-nav flex-row align-items-center gap-2 mb-0 d-none d-md-flex">
+                        <li class="nav-item"><a class="nav-link py-1 px-2" href="/">Home</a></li>
+                        <li class="nav-item"><a class="nav-link py-1 px-2" href="/calories">Calories</a></li>
+                        <li class="nav-item"><a class="nav-link py-1 px-2" href="/progress">Progress</a></li>
                     </ul>
-                    <ul class="navbar-nav flex-row align-items-center gap-0 gap-md-4 mb-0">
-                        <li class="nav-item">
-                            <a class="nav-link py-0 px-2" href="/profile">Profile</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link py-0 px-2" href="/logout">Log Out</a>
-                        </li>
+                    <ul class="navbar-nav flex-row align-items-center gap-2 mb-0 d-none d-md-flex">
+                        <li class="nav-item"><a class="nav-link py-1 px-2" href="/profile">Profile</a></li>
+                        <li class="nav-item"><a class="nav-link py-1 px-2" href="/logout">Log Out</a></li>
                     </ul>
 
+                    <div class="d-flex flex-wrap justify-content-center gap-2 d-md-none">
+
+                        <ul class="navbar-nav flex-row align-items-center gap-2 mb-0">
+                            <li class="nav-item"><a class="nav-link py-1 px-2" href="/">Home</a></li>
+                            <li class="nav-item"><a class="nav-link py-1 px-2" href="/calories">Calories</a></li>
+                            <li class="nav-item"><a class="nav-link py-1 px-2" href="/progress">Progress</a></li>
+                        </ul>
+
+                        <ul class="navbar-nav flex-row align-items-center gap-2 mb-0">
+                            <li class="nav-item"><a class="nav-link py-1 px-2" href="/profile">Profile</a></li>
+                            <li class="nav-item"><a class="nav-link py-1 px-2" href="/logout">Log Out</a></li>
+                        </ul>
+
+                    </div>
                     {% else %}
-                    <div class="me-auto"></div>
-                    <ul class="navbar-nav flex-row align-items-center gap-0 gap-md-4 mb-0">
-                        <li class="nav-item">
-                            <a class="nav-link py-0 px-2" href="/signin">Sign In</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link py-0 px-2" href="/login">Log In</a>
-                        </li>
+                    <div class="flex-grow-1 d-none d-md-flex"></div>
+                    <ul class="navbar-nav flex-row align-items-center gap-2 mb-0 d-none d-md-flex">
+                        <li class="nav-item"><a class="nav-link py-1 px-2" href="/signin">Sign In</a></li>
+                        <li class="nav-item"><a class="nav-link py-1 px-2" href="/login">Log In</a></li>
                     </ul>
-                    {% endif %}
 
+                    <div class="d-flex flex-wrap justify-content-center gap-2 d-md-none w-100">
+                        <ul class="navbar-nav flex-row align-items-center gap-2 mb-0">
+                            <li class="nav-item"><a class="nav-link py-1 px-2" href="/signin">Sign In</a></li>
+                            <li class="nav-item"><a class="nav-link py-1 px-2" href="/login">Log In</a></li>
+                        </ul>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </nav>
