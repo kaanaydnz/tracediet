@@ -1,8 +1,70 @@
 {% extends "layout.html" %}
 
-{% block title %}
-Home
-{% endblock %}
+{% block title %}Home{% endblock %}
+
 {% block main %}
-<h1>Welcome to TraceDiet!</h1>
+<div class="container py-4">
+
+    <!-- If user is logged in -->
+    {% if session["user_id"] %}
+    <!-- Hero Greeting -->
+    <div class="mb-5">
+        <h1 class="fw-bold text-primary">{{ greeting }}, {{ name }}! 👋</h1>
+        <p class="text-muted lead">Here is your daily overview.</p>
+    </div>
+
+    <!-- Stats Dashboard -->
+    <div class="row g-4">
+        <!-- BMI Card -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100 p-3">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase">Current BMI</h6>
+                    <h2 class="fw-bold text-dark">{{ latest_log.bmi if latest_log else '--' }}</h2>
+                    <a href="/progress" class="btn btn-outline-primary btn-sm mt-2">View Progress</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calories Card -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100 p-3">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase">Calories Eaten Today</h6>
+                    <h2 class="fw-bold text-info">{{ total_eaten }} kcal</h2>
+                    <a href="/calories" class="btn btn-outline-info btn-sm mt-2">Log Food</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goal Card -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100 p-3">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase">Target Weight</h6>
+                    <h2 class="fw-bold text-success">{{ target_weight if target_weight else 'Not set' }} kg</h2>
+                    <a href="/progress" class="btn btn-outline-success btn-sm mt-2">Update Goal</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- If user is not logged in -->
+    {% else %}
+    <div class="row align-items-center justify-content-center text-center py-5 mt-5">
+        <div class="col-md-8">
+            <h1 class="display-4 fw-bold text-primary mb-3">Welcome to TraceDiet</h1>
+            <p class="lead text-muted mb-5">
+                Your personal companion for tracking daily calories, monitoring body metrics, and achieving your health
+                goals one step at a time.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/signin" class="btn btn-primary btn-lg px-4 rounded-pill shadow-sm">Get Started</a>
+                <a href="/login" class="btn btn-outline-primary btn-lg px-4 rounded-pill shadow-sm">Log In</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
 {% endblock %}

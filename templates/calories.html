@@ -1,0 +1,123 @@
+{% extends "layout.html" %}
+
+{% block title %}Calories{% endblock %}
+
+{% block main %}
+<div class="container">
+
+    {% if target == 0 %}
+    <div class="alert alert-warning shadow-sm rounded-4 text-center py-4 mb-5">
+        <h4 class="alert-heading fw-bold">Missing Information!</h4>
+        <p class="mb-0">You need to provide your current weight, height, and
+            target weight to calculate your daily calorie goal.</p>
+        <hr>
+        <a href="/progress" class="btn btn-primary mt-2">Go to Progress Page</a>
+    </div>
+    {% else %}
+
+    {% set remaining = target - total %}
+    {% set percentage = ((total / target) * 100) | int if target > 0 else 0 %}
+    {% set bar_width = 100 if percentage > 100 else percentage %}
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-light">
+        <div class="card-body p-4 p-md-5">
+            <h5 class="text-primary text-uppercase tracking-wide mb-4 text-center">Today's Summary</h5>
+
+            <div class="row text-center mb-4">
+                <div class="col-4">
+                    <h6 class="text-muted mb-1">Target</h6>
+                    <h2 class="fw-bold text-dark mb-0">{{ target }}</h2>
+                </div>
+                <div class="col-4 border-start border-end">
+                    <h6 class="text-muted mb-1">Eaten</h6>
+                    <h2 class="fw-bold text-info mb-0">{{ total }}</h2>
+                </div>
+                <div class="col-4">
+                    <h6 class="text-muted mb-1">Remaining</h6>
+                    <h2 class="fw-bold {% if remaining < 0 %}text-danger{% else %}text-success{% endif %} mb-0">
+                        {{ remaining }}
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress" style="height: 20px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated 
+                    {% if percentage > 100 %}bg-danger{% elif percentage > 80 %}bg-warning{% else %}bg-success{% endif %}"
+                    role="progressbar" style="width: {{ bar_width }}%;" aria-valuenow="{{ percentage }}"
+                    aria-valuemin="0" aria-valuemax="100">
+                    {{ percentage }}%
+                </div>
+            </div>
+            {% if percentage > 100 %}
+            <p class="text-danger text-center small mt-2 mb-0 fw-medium">You have exceeded your daily limit!</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Adding Food -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-primary mb-3">Add Food</h5>
+
+                    <form action="/calories" method="post">
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">What did you eat?</label>
+                            <input type="text" class="form-control" id="food_name" name="food_name"
+                                placeholder="e.g. 1 slice of pizza" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small text-muted">Calories</label>
+                            <input type="number" class="form-control" id="calories_input" name="calories"
+                                placeholder="e.g. 285" required>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Add Entry</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Log -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-0">
+                    <h5 class="card-title text-primary p-3 mb-0">Today's Log</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Food</th>
+                                    <th class="text-end pe-4">Calories</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if foods %}
+                                {% for food in foods %}
+                                <tr>
+                                    <td class="ps-4 fw-medium">{{ food.food_name }}</td>
+                                    <td class="text-end pe-4"><span class="badge bg-secondary rounded-pill fs-6">{{
+                                            food.calories }} kcal</span></td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted py-5">
+                                        No food logged today. Try adding your first meal!
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -20,7 +20,44 @@ db = SQL("sqlite:///diet.db")
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    if not session.get("user_id"):
+        return render_template("index.html")
+
+    user_id = session["user_id"]
+
+    # Fetch user name and determine greeting based on current time
+    user = db.execute("SELECT name FROM users WHERE id = ?", user_id)[0]
+    hour = datetime.now().hour
+    if hour < 12:
+        greeting = "Good morning"
+    elif hour < 18:
+        greeting = "Good afternoon"
+    else:
+        greeting = "Good evening"
+
+    latest_log = db.execute(
+        "SELECT * FROM body_logs WHERE user_id = ? ORDER BY date DESC, id DESC LIMIT 1",
+        user_id,
+    )
+    latest_log = latest_log[0] if latest_log else None
+
+    foods = db.execute(
+        "SELECT calories FROM tracker_logs WHERE user_id = ? AND date = CURRENT_DATE",
+        user_id,
+    )
+    total_eaten = sum(food["calories"] for food in foods)
+
+    goal = db.execute("SELECT target_weight FROM user_goals WHERE user_id = ?", user_id)
+    target_weight = goal[0]["target_weight"] if goal else None
+
+    return render_template(
+        "index.html",
+        name=user["name"],
+        greeting=greeting,
+        latest_log=latest_log,
+        total_eaten=total_eaten,
+        target_weight=target_weight,
+    )
 
 
 if __name__ == "__main__":
@@ -323,4 +360,103 @@ def progress():
 
         return render_template(
             "progress.html", logs=logs, latest_log=latest_log, goal=goal
+        )
+
+
+@app.route("/calories", methods=["GET", "POST"])
+def calories():
+    """Manage daily food logs and calorie tracking"""
+
+    if not session.get("user_id"):
+        flash("Please log in to view your calories.", "danger")
+        return redirect("/login")
+
+    user_id = session["user_id"]
+
+    if request.method == "POST":
+        food_name = request.form.get("food_name")
+        calories_str = request.form.get("calories")
+
+        if not food_name or not calories_str:
+            flash("Food name and calories are required.", "danger")
+            return redirect("/calories")
+
+        try:
+            calories = int(calories_str)
+        except ValueError:
+            flash("Calories must be a valid whole number.", "danger")
+            return redirect("/calories")
+
+        if calories < 0:
+            flash("Calories cannot be negative.", "danger")
+            return redirect("/calories")
+
+        db.execute(
+            "INSERT INTO tracker_logs (user_id, food_name, calories, date) VALUES (?, ?, ?, CURRENT_DATE)",
+            user_id,
+            food_name,
+            calories,
+        )
+
+        flash(f"'{food_name}' added to today's log!", "success")
+        return redirect("/calories")
+    else:
+        user = db.execute("SELECT * FROM users WHERE id = ?", user_id)[0]
+
+        logs = db.execute(
+            "SELECT * FROM body_logs WHERE user_id = ? ORDER BY date DESC, id DESC LIMIT 1",
+            user_id,
+        )
+        latest_log = logs[0] if len(logs) > 0 else None
+
+        goals = db.execute("SELECT * FROM user_goals WHERE user_id = ?", user_id)
+        goal = goals[0] if len(goals) > 0 else None
+
+        daily_target = 0
+
+        if latest_log and goal and goal["target_weight"]:
+            birth_date = datetime.strptime(user["birthday"], "%Y-%m-%d")
+            today = datetime.today()
+            age = (
+                today.year
+                - birth_date.year
+                - ((today.month, today.day) < (birth_date.month, birth_date.day))
+            )
+
+            weight = latest_log["weight"]
+            height = latest_log["height"]
+
+            # BMR calculation using Mifflin-St Jeor Equation
+            if user["gender"] == "male":
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5
+            else:
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161
+
+            tdee = bmr * 1.2
+
+            target_w = goal["target_weight"]
+            if target_w < weight:
+                daily_target = int(tdee - 500)
+            elif target_w > weight:
+                daily_target = int(tdee + 500)
+            else:
+                daily_target = int(tdee)
+
+            if user["gender"] == "male" and daily_target < 1500:
+                daily_target = 1500
+            elif user["gender"] == "female" and daily_target < 1200:
+                daily_target = 1200
+
+        foods = db.execute(
+            "SELECT * FROM tracker_logs WHERE user_id = ? AND date = CURRENT_DATE ORDER BY id DESC",
+            user_id,
+        )
+        total_calories = sum(food["calories"] for food in foods)
+
+        return render_template(
+            "calories.html",
+            target=daily_target,
+            foods=foods,
+            total=total_calories,
+            latest_log=latest_log,
         )
