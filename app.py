@@ -19,7 +19,6 @@ Session(app)
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///diet.db")
 
-
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
@@ -29,11 +28,7 @@ db = SQL(DATABASE_URL)
 
 
 def init_db():
-    id_column = (
-        "id SERIAL PRIMARY KEY"
-        if IS_POSTGRES
-        else "id INTEGER PRIMARY KEY AUTOINCREMENT"
-    )
+    id_column = "id SERIAL PRIMARY KEY" if IS_POSTGRES else "id INTEGER PRIMARY KEY AUTOINCREMENT"
 
     db.execute(f"""
         CREATE TABLE IF NOT EXISTS users (
@@ -473,7 +468,12 @@ def calories():
         daily_target = 0
 
         if latest_log and goal and goal["target_weight"]:
-            birth_date = datetime.strptime(user["birthday"], "%Y-%m-%d")
+            birthday_value = user["birthday"]
+            if isinstance(birthday_value, str):
+                birth_date = datetime.strptime(birthday_value, "%Y-%m-%d")
+            else:
+                # Postgres returns DATE columns as native date objects, not strings
+                birth_date = datetime.combine(birthday_value, datetime.min.time())
             today = datetime.today()
             age = (
                 today.year
