@@ -217,3 +217,9 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 diet.db
+
+# OS generated files
+__MACOSX/
+.DS_Store
+flask_session/
+*.db
