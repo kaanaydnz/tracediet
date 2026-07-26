@@ -1,31 +1,63 @@
 # TraceDiet
-#### Video Demo: https://youtu.be/F0tP1b5oVR0
-#### Description:
-TraceDiet is a personalized, web-based diet and fitness tracker designed to ease the process of monitoring daily caloric intake and physical progress. This application has Python, Flask, and SQLite on the backend, and HTML, CSS, and Bootstrap 5 on the frontend.
 
-### Project Structure
-*   **`app.py`**: This is the core of the application. It contains all the Flask routing logic, session management, and backend data processing. It handles user authentication (register, login, logout), form validations, and database queries. It is also responsible for executing the mathematical formulas, such as calculating the BMI and implementing the Mifflin-St Jeor equation based on the data retrieved from the SQLite database.
-*   **`layout.html`**: The foundational Jinja template that all other HTML pages inherit from. It includes the `<head>` metadata, Bootstrap links, and the navigation bar. By using Jinja's `{% block main %}`, it ensures a consistent layout across the entire application without code duplication.
-*   **`index.html`**: The personalized dashboard. It greets the user based on the time of day and dynamically displays their current BMI, the total calories consumed that day, and their target weight.
-*   **`calories.html`**: The interface where users can log their daily food intake. It contains a form to input the food name and its caloric value. The backend captures this data and instantly updates the daily total shown on the dashboard.
-*   **`progress.html`**: A dedicated section for users to log updates to their physical metrics that are weight and height. When new data is submitted, the application recalculates their BMI and adjusts their caloric needs accordingly. It also has the target weight selection feature. 
-*   **`profile.html`**: Allows users to manage their account. They can easily update their personal information or change account details when needed.
-*   **`register.html` & `login.html`**: The gateways to the application. They provide secure forms for users to create an account or access their existing dashboard.
+### 🔗 Live Demo: [tracediet.onrender.com](https://tracediet.onrender.com)
+### 🎥 Video Demo: [youtu.be/F0tP1b5oVR0](https://youtu.be/F0tP1b5oVR0)
 
-### Design Choices
+> **Note:** The app is hosted on Render's free tier, which spins down after periods of inactivity. If the site feels slow on your first visit, give it 30–60 seconds to wake up.
 
-While developing the TraceDiet, I had some significant design decisions to ensure the application was both robust and user-friendly.
+## Description
 
-**1. Automated Database Initialization:**
-One of the most significant choices I made was discarding the `schema.sql` file which is often used in class examples. I wanted TraceDiet to be completely "plug-and-play." To achieve this, I wrote an `init_db()` function directly within the Python code. When the application runs, it automatically checks if the database and its required tables exist. If they do not, it creates them instantly. This design choice eliminates the need for manual setup via the command line, making the application much easier to deploy and test.
+TraceDiet is a personalized, web-based diet and fitness tracker designed to ease the process of monitoring daily caloric intake and physical progress. The backend is built with Python, Flask, and PostgreSQL, and the frontend uses HTML, CSS, and Bootstrap 5.
 
-**2. Mobile-Friendly Navigation Bar:**
-Another major issue I disturbed was the frontend layout, specifically the mobile navigation experience. By default, Bootstrap utilizes a "hamburger" menu (navbar-toggler) for mobile screens. However, I realized that hiding the core features (Home, Calories, Progress) in a dropdown menu negatively impacted the user interface design.
-Instead of the hamburger menu, I implemented a custom `flex-wrap` and grid-based approach. I utilized Bootstrap's flexbox utility classes to keep the navigation links visible at all times. On mobile devices, the "TraceDiet" brand automatically centers at the top, and the navigation links wrap symmetrically under it, creating a clean, app-like "widget" feel without any hidden menus. This required careful manipulation of classes like `w-100`, `justify-content-center`, and `d-md-none` to ensure the layout adapted perfectly from desktop to mobile screens.
+## Tech Stack
 
-**3. Scientific Method for Calorie Tracking:**
-I chose to implement the Mifflin-St Jeor equation rather than a simpler, flat-rate calorie calculator. While it required more complex backend logic to parse variables like age and gender, it significantly increases the real-world utility of the app. It ensures that the target calories displayed on the user's dashboard are scientifically grounded.
+- **Backend:** Python, Flask
+- **Database:** PostgreSQL ([Neon](https://neon.com) — serverless Postgres)
+- **Frontend:** HTML, CSS, Bootstrap 5, Jinja templating
+- **Deployment:** [Render](https://render.com) (web service) + Neon (database), deployed straight from this GitHub repo
+- **Auth & Sessions:** Werkzeug password hashing, Flask-Session
 
-### Conclusion
+## Project Structure
 
-Building TraceDiet was a challenging but very practical experience. It allowed me to bring together everything I learned in CS50, such as database design and SQL queries, Python backend logic, and responsive frontend development. The final product is a functional, mobile-ready web application that solves a real-world problem.
+* **`app.py`**: The core of the application. It contains all the Flask routing logic, session management, and backend data processing. It handles user authentication (register, login, logout), form validations, and database queries. It is also responsible for executing the mathematical formulas, such as calculating the BMI and implementing the Mifflin-St Jeor equation based on data retrieved from the database.
+* **`layout.html`**: The foundational Jinja template that all other HTML pages inherit from. It includes the `<head>` metadata, Bootstrap links, and the navigation bar. By using Jinja's `{% block main %}`, it ensures a consistent layout across the entire application without code duplication.
+* **`index.html`**: The personalized dashboard. It greets the user based on the time of day and dynamically displays their current BMI, the total calories consumed that day, and their target weight.
+* **`calories.html`**: The interface where users can log their daily food intake. It contains a form to input the food name and its caloric value. The backend captures this data and instantly updates the daily total shown on the dashboard.
+* **`progress.html`**: A dedicated section for users to log updates to their physical metrics — weight and height. When new data is submitted, the application recalculates their BMI and adjusts their caloric needs accordingly. It also includes the target weight selection feature.
+* **`profile.html`**: Allows users to manage their account. They can easily update their personal information or change account details when needed.
+* **`signin.html` & `login.html`**: The gateways to the application. They provide secure forms for users to create an account or access their existing dashboard.
+
+## Design Choices
+
+While developing TraceDiet, I made several deliberate design decisions to keep the application robust, portable, and user-friendly.
+
+**1. Automated Database Initialization**
+
+One of the most significant choices I made was discarding the `schema.sql` file often used in class examples. I wanted TraceDiet to be completely "plug-and-play." I wrote an `init_db()` function directly within the Python code that automatically checks whether the required tables exist and creates them if they don't — no manual setup step needed. This same function works against both SQLite (for local development) and PostgreSQL (in production), switching schema syntax based on the `DATABASE_URL` environment variable.
+
+**2. Mobile-Friendly Navigation Bar**
+
+Another area I focused on was the mobile navigation experience. By default, Bootstrap hides core navigation behind a "hamburger" menu on small screens. I felt hiding features like Home, Calories, and Progress behind a dropdown hurt usability, so instead I built a custom `flex-wrap` and grid-based navbar. On mobile, the "TraceDiet" brand centers at the top and the nav links wrap symmetrically underneath, giving a clean, app-like feel without any hidden menus.
+
+**3. Scientific Method for Calorie Tracking**
+
+Rather than a flat-rate calorie estimate, TraceDiet implements the Mifflin-St Jeor equation to calculate BMR and daily calorie targets based on age, gender, weight, and height — making the numbers shown on the dashboard scientifically grounded.
+
+**4. Production-Ready Deployment**
+
+The app is deployed on Render directly from this repository, with continuous deployment on every push to `main`. The database runs on Neon's serverless PostgreSQL, which keeps user data persistent (unlike ephemeral free-tier disks) while still being fully free to run.
+
+## Running Locally
+
+```bash
+git clone https://github.com/<your-username>/tracediet.git
+cd tracediet
+pip install -r requirements.txt
+python app.py
+```
+
+By default the app falls back to a local SQLite database (`diet.db`) when no `DATABASE_URL` environment variable is set, so no external database is required to run it locally. Visit `http://localhost:5000` in your browser.
+
+## Conclusion
+
+Building TraceDiet was a challenging but very practical experience. It allowed me to bring together everything I learned in CS50 — database design and SQL queries, Python backend logic, and responsive frontend development — and take it a step further by actually deploying it as a live, publicly accessible application. The final product is a functional, mobile-ready web application that solves a real-world problem.
