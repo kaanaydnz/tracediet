@@ -1,5 +1,4 @@
 import os
-import sqlite3
 
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
@@ -14,61 +13,71 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 Session(app)
 
 
-def init_db():
-    if not os.path.exists("diet.db"):
-        conn = sqlite3.connect("diet.db")
-        cursor = conn.cursor()
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///diet.db")
 
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                username TEXT NOT NULL UNIQUE,
-                hash TEXT NOT NULL,
-                name TEXT NOT NULL,
-                surname TEXT NOT NULL,
-                gender TEXT NOT NULL,
-                birthday DATE NOT NULL
-            );
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS user_goals (
-                user_id INTEGER PRIMARY KEY,
-                target_weight REAL,
-                daily_calorie_target INTEGER,
-                FOREIGN KEY (user_id) REFERENCES users (id)
-            );
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS body_logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                weight REAL NOT NULL,
-                height REAL NOT NULL,
-                bmi REAL NOT NULL,
-                date DATE DEFAULT CURRENT_DATE,
-                FOREIGN KEY (user_id) REFERENCES users (id)
-            );
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS tracker_logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                food_name TEXT NOT NULL,
-                calories INTEGER NOT NULL,
-                date DATE DEFAULT CURRENT_DATE,
-                FOREIGN KEY (user_id) REFERENCES users (id)
-            );
-        """)
-        conn.commit()
-        conn.close()
+
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+IS_POSTGRES = DATABASE_URL.startswith("postgresql://")
+
+db = SQL(DATABASE_URL)
+
+
+def init_db():
+    id_column = (
+        "id SERIAL PRIMARY KEY"
+        if IS_POSTGRES
+        else "id INTEGER PRIMARY KEY AUTOINCREMENT"
+    )
+
+    db.execute(f"""
+        CREATE TABLE IF NOT EXISTS users (
+            {id_column},
+            username TEXT NOT NULL UNIQUE,
+            hash TEXT NOT NULL,
+            name TEXT NOT NULL,
+            surname TEXT NOT NULL,
+            gender TEXT NOT NULL,
+            birthday DATE NOT NULL
+        )
+    """)
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS user_goals (
+            user_id INTEGER PRIMARY KEY,
+            target_weight REAL,
+            daily_calorie_target INTEGER,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """)
+    db.execute(f"""
+        CREATE TABLE IF NOT EXISTS body_logs (
+            {id_column},
+            user_id INTEGER NOT NULL,
+            weight REAL NOT NULL,
+            height REAL NOT NULL,
+            bmi REAL NOT NULL,
+            date DATE DEFAULT CURRENT_DATE,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """)
+    db.execute(f"""
+        CREATE TABLE IF NOT EXISTS tracker_logs (
+            {id_column},
+            user_id INTEGER NOT NULL,
+            food_name TEXT NOT NULL,
+            calories INTEGER NOT NULL,
+            date DATE DEFAULT CURRENT_DATE,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """)
 
 
 init_db()
-
-db = SQL("sqlite:///diet.db")
 
 
 @app.route("/")
@@ -111,10 +120,6 @@ def index():
         total_eaten=total_eaten,
         target_weight=target_weight,
     )
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
 
 
 @app.route("/signin", methods=["GET", "POST"])
@@ -513,3 +518,9 @@ def calories():
             total=total_calories,
             latest_log=latest_log,
         )
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    debug_mode = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=port, debug=debug_mode)
