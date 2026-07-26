@@ -1,7 +1,7 @@
 # TraceDiet
 
 ### 🔗 Live Demo: [tracediet.onrender.com](https://tracediet.onrender.com)
-### 🎥 Video Demo: [youtu.be/F0tP1b5oVR0](https://youtu.be/F0tP1b5oVR0)
+### 🎥 Video Demo: [youtu.be/F0tP1b5oVR0](https://www.youtube.com/embed/F0tP1b5oVR0?si=qZs_RkxrIrOqNfg_&start=16)
 
 > **Note:** The app is hosted on Render's free tier, which spins down after periods of inactivity. If the site feels slow on your first visit, give it 30–60 seconds to wake up.
 
@@ -50,7 +50,7 @@ The app is deployed on Render directly from this repository, with continuous dep
 ## Running Locally
 
 ```bash
-git clone https://github.com/<your-username>/tracediet.git
+git clone https://github.com/kaanaydnz/tracediet.git
 cd tracediet
 pip install -r requirements.txt
 python app.py
@@ -60,4 +60,4 @@ By default the app falls back to a local SQLite database (`diet.db`) when no `DA
 
 ## Conclusion
 
-Building TraceDiet was a challenging but very practical experience. It allowed me to bring together everything I learned in CS50 — database design and SQL queries, Python backend logic, and responsive frontend development — and take it a step further by actually deploying it as a live, publicly accessible application. The final product is a functional, mobile-ready web application that solves a real-world problem.
+Building TraceDiet was a challenging but very practical experience. It brought together database design and SQL queries, Python backend logic, and responsive frontend development — and took it a step further by actually deploying it as a live, publicly accessible application with a production-grade database. The final product is a functional, mobile-ready web application that solves a real-world problem.
